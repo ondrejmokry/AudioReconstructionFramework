@@ -3,7 +3,7 @@
 % (3) quantized samples in T domain
 % (4) some of them missing
 
-addpath(genpath('PemoQ'));
+% addpath(genpath('PemoQ'));
 
 nbits = [ 2 4 8 16 32 ];
 pTs   = 0.1 : 0.1 : 0.9;
@@ -22,13 +22,13 @@ for signal = 1:4
             signame = 'group_of_all';
     end
 
-    ODGs      = NaN(4, length(nbits), length(pTs), length(pTFs));
+    % ODGs      = NaN(4, length(nbits), length(pTs), length(pTFs));
     SDRs_inp  = NaN(4, length(nbits), length(pTs), length(pTFs));
     SDRs_deq  = NaN(4, length(nbits), length(pTs), length(pTFs));
     SDRs      = NaN(4, length(nbits), length(pTs), length(pTFs));
 
     %% take a signal
-    [ s, fs ] = audioread([signame,'.wav']);
+    [ s, fs ] = audioread(['signals/',signame,'.wav']);
     s = s(fs+1:2*fs);
     s = s/max(abs(s));
 
@@ -118,21 +118,21 @@ for signal = 1:4
                             rec = xsyninp;
                             fprintf('\nsynthesis model, time domain:\n\n')
                     end
-                    [~, ~, ODG, ~] = audioqual(s/10, rec/10, fs);
-                    ODGs(l, i, j, k)     = ODG;
+                    % [~, ~, ODG, ~] = audioqual(s/10, rec/10, fs);
+                    % ODGs(l, i, j, k)     = ODG;
                     SDRs_inp(l, i, j, k) = sdr(s(~maskT), rec(~maskT));
                     SDRs_deq(l, i, j, k) = sdr(s(maskT), rec(maskT));
                     SDRs(l, i, j, k)     = sdr(s, rec);
 
                     %% output to command window
                     fprintf(repmat('\b', 1, 22))                
-                    fprintf('ODG: %f\n', ODG)
+                    % fprintf('ODG: %f\n', ODG)
                     fprintf('SDR on missing samples: %f\n', sdr(s(~maskT), rec(~maskT)));
                     fprintf('SDR on quantized samples: %f\n', sdr(s(maskT), rec(maskT)));
                     fprintf('SDR on the whole signal: %f\n', sdr(s, rec));
 
                 end           
-                save(['experiment_', signame, '.mat'],'ODGs','SDRs_inp','SDRs_deq','SDRs','nbits','pTs','pTFs','s','fs')
+                % save(['experiment_', signame, '.mat'],'ODGs','SDRs_inp','SDRs_deq','SDRs','nbits','pTs','pTFs','s','fs')
             end
         end
     end
