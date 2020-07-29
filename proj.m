@@ -6,6 +6,11 @@ function proj = proj(x, xq, delta)
 %       x       vector of input signal
 %       xq      quantized signal
 %       delta   quantization step
+%
+% Date: 16/07/2020
+% By Ondrej Mokry, Pavel Zaviska
+% Brno University of Technology
+% Contact: ondrej.mokry@mensa.cz
 
 overstep_above = (x - xq) > delta/2;
 overstep_below = (xq - x) > delta/2;

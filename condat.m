@@ -33,6 +33,11 @@ function [u, relnorm] = condat(form, model, algo)
 %       u        output signal / coefficients
 %       relnorm  vector maxit x 1 containing the relative norm of the
 %                solution during iterations
+%
+% Date: 16/07/2020
+% By Ondrej Mokry
+% Brno University of Technology
+% Contact: ondrej.mokry@mensa.cz
 
 %% initialization
 if strcmp(form, 'analysis')

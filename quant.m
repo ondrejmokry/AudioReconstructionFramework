@@ -5,6 +5,11 @@ function [xq, delta] = quant(x, w)
 % Input arguments
 %       x       vector of input signal
 %       w       wordlength
+%
+% Date: 16/07/2020
+% By Ondrej Mokry, Pavel Zaviska
+% Brno University of Technology
+% Contact: ondrej.mokry@mensa.cz
 
 % quantization step
 delta = 2^(-w+1); 

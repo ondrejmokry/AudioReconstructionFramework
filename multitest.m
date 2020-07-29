@@ -1,39 +1,60 @@
-% (1) quantized coefficients in TF domain
-% (2) some of them missing
-% (3) quantized samples in T domain
-% (4) some of them missing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%                      test of the degradation model                      %
+%       with both T and TF domains quantized and partially missing        %
+%          (not using the function g of the Condat-Vu algorithm)          %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-PQ = exist('PemoQ','dir');
-if PQ
-    addpath(genpath('PemoQ'));
-end
+% Date: 21/07/2020
+% By Ondrej Mokry
+% Brno University of Technology
+% Contact: ondrej.mokry@mensa.cz
 
+ltfatstart
+rng(0)
+addpath(genpath('PemoQ'));
+
+% load signals
+load('signals/EBU_SQAM.mat');
+sigs = { 'a08_violin',...
+         'a16_clarinet',...
+         'a18_bassoon',...
+         'a25_harp',...
+         'a35_glockenspiel',...
+         'a41_celesta',...
+         'a42_accordion',...
+         'a58_guitar_sarasate',...
+         'a60_piano_schubert',...
+         'a66_wind_ensemble_stravinsky' };
+
+% set parameters
 nbits = [ 2 4 8 16 32 ];
 pTs   = 0.1 : 0.1 : 0.9;
 pTFs  = 0.1 : 0.1 : 0.9;
 
-for signal = 1:4
+% timer
+t_start = clock;
+
+combinationcounter = 0;
+for signum = 1:length(sigs)
     
-    switch signal
-        case 1
-            signame = 'violin';
-        case 2
-            signame = 'group_of_two';
-        case 3
-            signame = 'group_of_four';
-        case 4
-            signame = 'group_of_all';
-    end
+    ODGs      = NaN(6, length(nbits), length(pTs), length(pTFs));
+    SDRs_inp  = NaN(6, length(nbits), length(pTs), length(pTFs));
+    SDRs_deq  = NaN(6, length(nbits), length(pTs), length(pTFs));
+    SDRs      = NaN(6, length(nbits), length(pTs), length(pTFs));
+    times     = NaN(6, length(nbits), length(pTs), length(pTFs));
 
-    ODGs      = NaN(4, length(nbits), length(pTs), length(pTFs));
-    SDRs_inp  = NaN(4, length(nbits), length(pTs), length(pTFs));
-    SDRs_deq  = NaN(4, length(nbits), length(pTs), length(pTFs));
-    SDRs      = NaN(4, length(nbits), length(pTs), length(pTFs));
+    %% take a signal and make it shorter
+    signame = sigs{signum};
+    s       = eval(signame);
+    s       = s(fs+1:2*fs);
+    s       = s/max(abs(s));
 
-    %% take a signal
-    [ s, fs ] = audioread(['signals/',signame,'.wav']);
-    s = s(fs+1:2*fs);
-    s = s/max(abs(s));
+    %% curl the ends
+    cosine   = cos(linspace(-pi/2,pi/2,400)').^2;
+    s(1:200) = s(1:200).*cosine(1:200);
+    s(end-199:end) = s(end-199:end).*cosine(201:end);
 
     %% choose TF transform
     F = frametight(frame('dgt',{'sine',2048},1024,2048,'timeinv'));
@@ -47,6 +68,8 @@ for signal = 1:4
     for i = 1:length(nbits)
         for j = 1:length(pTs)
             for k = 1:length(pTFs)
+
+                combinationcounter = combinationcounter + 1;
 
                 %% parameters
                 wT  = nbits(i); % wordlength in T domain
@@ -78,68 +101,99 @@ for signal = 1:4
                 model.projTF = @(x) x.*(~maskTF) + cproj(x, cq, dTF).*maskTF;
                 model.dim = [ length(s), length(c) ];
 
-                algo.tau   = 0.5;
-                algo.sigma = 0.5;
+                algo.tau   = sqrt(1/3);
+                algo.sigma = sqrt(1/3);
                 algo.rho   = 1;
                 algo.maxit = 300;
                 algo.tol   = 0;
-                
+
                 model.sparse = @(x) sign(x) .* max(abs(x) - 1/algo.sigma, 0);
 
                 %% run the Condat algorithm
-                [xana, relnormana] = condat('analysis', model, algo);
-                [csyn, relnormsyn] = condat('synthesis', model, algo);
+                tic
+                [xana, ~] = condat('analysis', model, algo);
+                xana      = real(xana);
+                times(1, i, j, k) = toc;
 
-                xana = real(xana);
-                xsyn = real(frsyn(F, csyn));
+                tic
+                [csyn, ~] = condat('synthesis', model, algo);
+                xsyn      = real(frsyn(F, csyn));
+                times(2, i, j, k) = toc;
 
-                %% run inpainting + dequentization in T domain for reference
-                [sqq, dTT] = quant(s, wT);
-                model.projT  = @(x) x.*(~maskT) + proj(x, sqq, dTT).*maskT;
+                %% run inpainting + dequentization in T domain
+                model.projT  = @(x) x.*(~maskT) + proj(x, sq, dT).*maskT;
                 model.projTF = @(x) x;
 
+                tic
                 [xanainp, ~] = condat('analysis', model, algo);
-                [csyninp, ~] = condat('synthesis', model, algo);
+                xanainp      = real(xanainp);
+                times(3, i, j, k) = toc;
 
-                xanainp = real(xanainp);
-                xsyninp = real(frsyn(F, csyninp));
+                tic
+                [csyninp, ~] = condat('synthesis', model, algo);
+                xsyninp      = real(frsyn(F, csyninp));
+                times(4, i, j, k) = toc;
+
+                %% run inpainting + dequentization in TF domain
+                model.projT  = @(x) x;
+                model.projTF = @(x) x.*(~maskTF) + cproj(x, cq, dTF).*maskTF;
+                
+                tic
+                [xanafre, ~] = condat('analysis', model, algo);
+                xanafre = real(xanafre);
+                times(5, i, j, k) = toc;
+                
+                tic
+                [csynfre, ~] = condat('synthesis', model, algo);
+                xsynfre = real(frsyn(F, csynfre));
+                times(6, i, j, k) = toc;
 
                 %% compute the metrics
-                fprintf('\nnbits: %d, pT: %.1f, pTF: %.1f\n', wT, pT, pTF)           
-                for l = 1:4
-                    switch l
+                fprintf('\nnbits: %d, pT: %.1f, pTF: %.1f\n', wT, pT, pTF)
+                for m = 1:6
+                    switch m
                         case 1
                             rec = xana;
-                            fprintf('\nanalysis model, both domains:\n\n')
+                            fprintf('\nanalysis model, both domains:\n')
                         case 2
                             rec = xsyn;
-                            fprintf('\nsynthesis model, both domains:\n\n')
+                            fprintf('\nsynthesis model, both domains:\n')
                         case 3
                             rec = xanainp;
-                            fprintf('\nanalysis model, time domain:\n\n')
+                            fprintf('\nanalysis model, time domain:\n')
                         case 4
                             rec = xsyninp;
-                            fprintf('\nsynthesis model, time domain:\n\n')
+                            fprintf('\nsynthesis model, time domain:\n')
+                        case 5
+                            rec = xanafre;
+                            fprintf('\nanalysis model, TF domain:\n')
+                        case 6
+                            rec = xsynfre;
+                            fprintf('\nsynthesis model, TF domain:\n')
                     end
-                    if PQ
-                        [~, ~, ODG, ~]   = audioqual(s/10, rec/10, fs);
-                        ODGs(l, i, j, k) = ODG;
-                    end
-                    SDRs_inp(l, i, j, k) = sdr(s(~maskT), rec(~maskT));
-                    SDRs_deq(l, i, j, k) = sdr(s(maskT), rec(maskT));
-                    SDRs(l, i, j, k)     = sdr(s, rec);
+                    [~, ~, ODG, ~]       = audioqual(s, rec, fs);
+                    ODGs(m, i, j, k)     = ODG;
+                    SDRs_inp(m, i, j, k) = sdr(s(~maskT), rec(~maskT));
+                    SDRs_deq(m, i, j, k) = sdr(s(maskT), rec(maskT));
+                    SDRs(m, i, j, k)     = sdr(s, rec);
 
                     %% output to command window
-                    fprintf(repmat('\b', 1, 22))                
-                    if PQ
-                        fprintf('ODG: %f\n', ODG)
-                    end
-                    fprintf('SDR on missing samples: %f\n', sdr(s(~maskT), rec(~maskT)));
-                    fprintf('SDR on quantized samples: %f\n', sdr(s(maskT), rec(maskT)));
-                    fprintf('SDR on the whole signal: %f\n', sdr(s, rec));
+                    fprintf(repmat('\b', 1, 22))
+                    fprintf('   ODG: %f\n', ODG)
+                    fprintf('   SDR on missing samples: %f\n', sdr(s(~maskT), rec(~maskT)));
+                    fprintf('   SDR on quantized samples: %f\n', sdr(s(maskT), rec(maskT)));
+                    fprintf('   SDR on the whole signal: %f\n', sdr(s, rec));
 
                 end           
-                % save(['experiment_', signame, '.mat'],'ODGs','SDRs_inp','SDRs_deq','SDRs','nbits','pTs','pTFs','s','fs')
+                save(['results/experiments/experiment_', signame(1:3), '.mat'],'ODGs','SDRs_inp','SDRs_deq','SDRs','times','nbits','pTs','pTFs','s','fs')
+                
+                % timer again
+                t_now = clock;
+                fprintf('\nSo far, the experiment has taken %d hours.',round(etime(t_now,t_start)/3600))
+                estimatedtotalhours =...
+                    etime(t_now,t_start)*length(sigs)*length(nbits)*length(pTs)*length(pTFs)...
+                    /( combinationcounter * 3600);
+                fprintf('\nEstimated remaining time: %d hours.\n',round(estimatedtotalhours - etime(t_now,t_start)/3600))
             end
         end
     end
