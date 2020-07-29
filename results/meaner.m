@@ -1,6 +1,6 @@
 function [ SDRs, SDRs_deq, SDRs_inp, ODGs, times ] = meaner(fold,gflag)
-% MEANER Compute the average performance of the restoratin procedure based
-% on several signals.
+% MEANER Compute the average performance of the reconstruction procedure
+% based on several signals.
 %
 % Input arguments
 %       fold ... path to the folder with the results, ending with '/'
