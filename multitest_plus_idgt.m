@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                         %
-%                      test of the degradation model                      %
+%           test of the degradation (amd reconstruction) model            %
 %       with both T and TF domains quantized and partially missing        %
 %          (not using the function g of the Condat-Vu algorithm)          %
 %                                                                         %
