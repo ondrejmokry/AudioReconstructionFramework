@@ -1,6 +1,6 @@
 # AudioRestorationFramework
  
-Supplemental material to the paper Flexible framework for audio restoration by Ondřej Mokrý, Pavel Rajmic and Pavel Záviška, submitted to the 23rd International Conference on Digital Audio Effects (DAFx), Vienna, 2020.
+Supplemental material to the paper Flexible framework for audio restoration by Ondřej Mokrý, Pavel Rajmic and Pavel Záviška, accepted to the 23rd International Conference on Digital Audio Effects (DAFx), Vienna, 2020.
 
 The repository contains all the MATLAB codes needed to produce the results presented in the paper. The main file is multitest.m, the file generating all the figures is plot_multitest.m. Pregenerated set of figures is available in the subfolder figures.
 
