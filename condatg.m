@@ -1,6 +1,6 @@
 function [u, relnorm] = condatg(form, model, algo)
 % CONDAT A Generic Proximal Algorithm for Convex Optimization applied to the
-% task of general audio restoration.
+% task of general audio reconstruction.
 %
 % The algorithm solves the problem of minimizing l1 norm of signal
 % coefficients while both the signal and the coefficients lie in box-type
