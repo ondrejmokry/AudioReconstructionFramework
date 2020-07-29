@@ -4,10 +4,10 @@ function [xq, delta] = cquant(x, w)
 % wordlength w.
 %
 % Input arguments
-%       x       vector of input signal
+%       x       (complex) vector of input signal
 %       w       wordlength
 %
-% Date: 16/07/2020
+% Date: 29/07/2020
 % By Ondrej Mokry
 % Brno University of Technology
 % Contact: ondrej.mokry@mensa.cz

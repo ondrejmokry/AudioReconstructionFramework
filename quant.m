@@ -3,10 +3,10 @@ function [xq, delta] = quant(x, w)
 % quantization levels is computed according to the wordlength.
 %
 % Input arguments
-%       x       vector of input signal
+%       x       (real) vector of input signal
 %       w       wordlength
 %
-% Date: 16/07/2020
+% Date: 29/07/2020
 % By Ondrej Mokry, Pavel Zaviska
 % Brno University of Technology
 % Contact: ondrej.mokry@mensa.cz

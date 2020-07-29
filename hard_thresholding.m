@@ -1,4 +1,15 @@
 function s = hard_thresholding(a, k)
+% HARD_THRESHOLDING performs the thresholding of the input Gabor
+% coefficients, while taking into account the complex conjugacy.
+%
+% This means that approximately k pairs of coefficients are chosen
+% (depending on whether the DC coefficient is kept), such that synthesis of
+% s produces a real signal.
+%
+% Date: 29/07/2020
+% By Ondrej Mokry, Pavel Zaviska
+% Brno University of Technology
+% Contact: ondrej.mokry@mensa.cz
 
 odd = mod(length(a),2);
 

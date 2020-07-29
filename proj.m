@@ -3,11 +3,11 @@ function proj = proj(x, xq, delta)
 % solutions for the dequantization problem.
 %
 % Input arguments
-%       x       vector of input signal
+%       x       (real) vector of input signal
 %       xq      quantized signal
 %       delta   quantization step
 %
-% Date: 16/07/2020
+% Date: 29/07/2020
 % By Ondrej Mokry, Pavel Zaviska
 % Brno University of Technology
 % Contact: ondrej.mokry@mensa.cz

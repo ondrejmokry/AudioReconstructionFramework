@@ -3,11 +3,11 @@ function p = cproj(x, xq, delta)
 % solutions for the dequantization problem in the complex setting.
 %
 % Input arguments
-%       x       vector of input signal
+%       x       (complex) vector of input signal
 %       xq      quantized signal
 %       delta   quantization step
 %
-% Date: 16/07/2020
+% Date: 29/07/2020
 % By Ondrej Mokry
 % Brno University of Technology
 % Contact: ondrej.mokry@mensa.cz
